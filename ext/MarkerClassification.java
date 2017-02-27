@@ -44,14 +44,15 @@ public class MarkerClassification {
         int overlap = 1;
 
         int marker_cut = 0;
-        String prefix = "../../ext/set3";
+        int b_count = 0;
+        String prefix = "./ext/set3";
 
         File f2 = new File(prefix + "/test_file/");
 
+        System.out.print("[");
         for(String fileList2:f2.list()){
             //System.out.println("## sample - "+ fileList2 );
-            System.out.println("{\n'sample':" + fileList2 + ",");
-            System.out.println("}");
+            System.out.print("{\"bac_id\":\"" + fileList2.substring(0,fileList2.indexOf(".csv")) + "\",");
             BufferedReader reader3 = new BufferedReader(new FileReader(prefix + "/marker_metadata/list.txt"));
             BufferedReader reader5 = new BufferedReader(new FileReader(prefix + "/marker_metadata/marker_cut.txt"));
 
@@ -97,19 +98,20 @@ public class MarkerClassification {
                 }
 
                 if(count >= marker_cut){
-                    System.out.println("\t$$$$ " + text3 + " is detected.");
+                    System.out.print("\"species\":\"" + text3 + "\"}");
                 }else{
                     //System.out.println( fileList2 + " is unidentified");
                 }
-
-
-
                 marker.clear();
 
 
             }
+            b_count++;
+            if (b_count < f2.list().length) {
+              System.out.print(",");
+            }
         }
-
+        System.out.print("]");
 
     }
 
@@ -129,7 +131,7 @@ public class MarkerClassification {
 
             double inten_max = 0;
 
-            String prefix = "../../ext/set3";
+            String prefix = "./ext/set3";
 
 
 
