@@ -2,22 +2,19 @@ import React from 'react';
 import { BootstrapTable, TableHeaderColumn, TableD } from 'react-bootstrap-table';
 import { Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { loadDataRequest, selectData } from 'actions/bacteria';
+import { delDataRequest, loadDataRequest, selectData } from 'actions/bacteria';
 
 class Table extends React.Component {
   constructor(props) {
     super(props);
-    this.selectRowProp = {
-      mode: 'checkbox'
-    };
   }
 
   componentDidMount() {
     this.props.loadDataRequest();
   }
 
-  onClickProductSelected(cell, row, rowIndex){
-   console.log('Product #', rowIndex);
+  onClickChartSelected(cell, row, rowIndex){
+   console.log('Draw #', rowIndex);
    this.props.selectData(rowIndex);
   }
 
@@ -27,12 +24,30 @@ class Table extends React.Component {
         bsStyle="primary"
         bsSize="xsmall"
         onClick={() =>
-        this.onClickProductSelected(cell, row, rowIndex)}
+        this.onClickChartSelected(cell, row, rowIndex)}
       >
-      SELECT
+        DRAW
       </Button>
     );
- }
+  }
+
+  onClickDeleteSelected(cell, row, rowIndex){
+    console.log('Delete #', rowIndex);
+    this.props.delDataRequest(row.bac_id);
+  }
+
+  deleteButton(cell, row, enumObject, rowIndex) {
+    return (
+      <Button
+        bsStyle="primary"
+        bsSize="xsmall"
+        onClick={() =>
+        this.onClickDeleteSelected(cell, row, rowIndex)}
+      >
+        DELETE
+      </Button>
+    );
+  }
 
   fileFormatter(cell, row) {
     return `<a target='_blank' href='http://127.0.0.1:3000/datafile/test_file/${cell}.csv'> Download </a>`;
@@ -42,7 +57,6 @@ class Table extends React.Component {
     return (
       <BootstrapTable
       data={this.props.data}
-      selectRow={this.selectRowProp}
       height='240'
       scrollTop={ 'Bottom' }
       exportCSV={ true }>
@@ -51,8 +65,9 @@ class Table extends React.Component {
         <TableHeaderColumn dataField='species'>Species</TableHeaderColumn>
         <TableHeaderColumn dataField='strain'>Strain</TableHeaderColumn>
         <TableHeaderColumn dataField='exp_desc'>Exp_Desc</TableHeaderColumn>
-        <TableHeaderColumn dataField='bac_id' dataFormat={ this.fileFormatter } export={ false }>DataFile</TableHeaderColumn>
-        <TableHeaderColumn dataFormat={ this.cellButton.bind(this) } export={ false }>DrawChart</TableHeaderColumn>
+        <TableHeaderColumn dataField='bac_id' dataFormat={ this.fileFormatter } export={ false } width='80px'>DataFile</TableHeaderColumn>
+        <TableHeaderColumn dataFormat={ this.cellButton.bind(this) } export={ false } width='65px'>{''}</TableHeaderColumn>
+        <TableHeaderColumn dataFormat={ this.deleteButton.bind(this) } export={ false } width='75px'>{''}</TableHeaderColumn>
       </BootstrapTable>
     );
   }
@@ -72,6 +87,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     selectData: (idx) => {
       return dispatch(selectData(idx));
+    },
+    delDataRequest: (idx) => {
+      return dispatch(delDataRequest(idx));
     }
   };
 };

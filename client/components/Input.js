@@ -1,6 +1,6 @@
 import React from 'react';
 import { Panel, Form, FormGroup, ControlLabel, Button, FormControl, Modal } from 'react-bootstrap';
-import { loadDataRequest, addDataRequest, delDataRequest, runRequest } from 'actions/bacteria';
+import { loadDataRequest, addDataRequest, runRequest } from 'actions/bacteria';
 import { connect } from 'react-redux';
 
 class Input extends React.Component {
@@ -36,6 +36,13 @@ class Input extends React.Component {
   changeDataFile(e) {
     let reader = new FileReader();
 
+    if (e.target.value.indexOf('.csv')) {
+      this.setState({data_type: 'csv'});
+    }
+    else {
+      this.setState({data_type: 'xml'});
+    }
+
     reader.onload = (e) => {
         if(e.target.readyState != 2) return;
         if(e.target.error) {
@@ -57,15 +64,39 @@ class Input extends React.Component {
     this.setState({showModal: true});
   }
 
+  // TODO: XML to JSON
+
+  csvToJson(csv) {
+    let lines=csv.split("\n");
+    let result = [];
+    let headers=['mz','intensity','rel_intensity','no'];
+
+    for(let i=1;i<lines.length;i++){
+  	  let obj = {};
+  	  let currentline=lines[i].split(",");
+      if (currentline.length < 4)
+        continue;
+
+      obj['idx'] = i;
+      obj['snr'] = 0;
+  	  for(let j=0;j<headers.length;j++){
+  		  obj[headers[j]] = currentline[j].replace("\r","");
+  	  }
+  	  result.push(obj);
+    }
+    return result;
+  }
+
   handleAdd() {
     if (this.state.bac_id != '' &&
       this.state.data_file != null) {
-      let peaks = [];
+
+      let peaks = this.csvToJson(this.state.data_file)
       let requestedData = {
         bac_id: this.state.bac_id,
         strain: this.state.strain,
         exp_desc: this.state.exp_desc,
-        peaks: this.state.data_file,
+        peaks: peaks,
         data_file: this.state.data_file
       }
       console.log('Add Requested:', requestedData);
@@ -76,12 +107,6 @@ class Input extends React.Component {
       alert("Bac_ID and Data file are necessary");
     }
     this.setState({showModal: false});
-  }
-
-  handleDel() {
-    // to be implemented...
-    console.log('Del Requested');
-    this.props.delDataRequest('test');
   }
 
   handleRun() {
@@ -97,7 +122,7 @@ class Input extends React.Component {
     return (
       <Panel header={(<h3>Control Panel</h3>)}>
         <Form inline>
-          <div style={{margin: "0 100px"}}>
+          <div style={{margin: "0 135px"}}>
             <FormGroup controlId="host">
               <ControlLabel>Host</ControlLabel>
               {' '}
@@ -122,7 +147,7 @@ class Input extends React.Component {
               Del Marker
             </Button>
             {' '}
-            <Button bsStyle="info" onClick={this.addOpen.bind(this)}>
+            <Button bsStyle="info" onClick={this.addOpen.bind(this)} disabled={this.props.status.add}>
               {this.props.status.add ? 'Waiting...' : 'Add Data'}
             </Button>
             <Modal show={this.state.showModal} onHide={this.close}>
@@ -160,12 +185,8 @@ class Input extends React.Component {
               </form>
             </Modal>
             {' '}
-            <Button bsStyle="info" onClick={this.handleDel.bind(this)}>
-              { this.props.status.del ? 'Waiting...' : 'Del Data' }
-            </Button>
-            {' '}
-            <Button bsStyle="danger" onClick={this.handleRun.bind(this)}>
-              { this.props.status.del ? 'Waiting...' : 'Run Process' }
+            <Button bsStyle="danger" onClick={this.handleRun.bind(this)} disabled={this.props.status.run}>
+              { this.props.status.run ? 'Waiting...' : 'Run Process' }
             </Button>
           </div>
         </Form>

@@ -30,6 +30,8 @@ data.post('/', (req, res) => {
           }
           console.log(err, written, buffer);
           fs.close(fd, () => {
+            let requests;
+
             console.log('File write completed');
             models.Bacteria.create({
                 bac_id: newData.bac_id,
@@ -37,13 +39,30 @@ data.post('/', (req, res) => {
                 strain: newData.strain,
                 exp_desc: newData.exp_desc
             }).then(() => {
-              res.json({
-                succ: true
+              requests = newData.peaks.map((peak) => {
+                return new Promise((resolve) => {
+                  models.Peaks.create({
+                    p_id: newData.bac_id + peak.idx,
+                    bac_id: newData.bac_id,
+                    mz: peak.mz,
+                    intensity: peak.intensity*100,
+                    rel_intensity: peak.rel_intensity,
+                    no: peak.no,
+                    snr: peak.snr
+                  });
+                  resolve();
+                });
               });
-            }).catch((e) => {
-              console.log(e);
-              res.json({
-                succ: false
+
+              Promise.all(requests).then(() => {
+                res.json({
+                  succ: true
+                });
+              }).catch((e) => {
+                console.log(e);
+                res.json({
+                  succ: false
+                });
               });
             });
           });
@@ -93,8 +112,18 @@ data.get('/:id', (req, res) => {
 // Del data data
 data.delete('/:id', (req, res) => {
   console.log('Requested to delete: ' + req.params.id);
-  res.json({
-    succ: true
+  models.Bacteria.destroy({
+    where: {
+      bac_id: req.params.id
+    }
+  }).then(() => {
+    res.json({
+      succ: true
+    })
+  }).catch((e) => {
+    res.json({
+      succ: false
+    })
   })
 });
 

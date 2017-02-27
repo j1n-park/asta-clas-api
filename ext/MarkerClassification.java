@@ -51,8 +51,11 @@ public class MarkerClassification {
 
         System.out.print("[");
         for(String fileList2:f2.list()){
+            if (fileList2.indexOf(".DS_Store") >= 0)
+              continue;
             //System.out.println("## sample - "+ fileList2 );
             System.out.print("{\"bac_id\":\"" + fileList2.substring(0,fileList2.indexOf(".csv")) + "\",");
+            System.out.print("\"species\":\"");
             BufferedReader reader3 = new BufferedReader(new FileReader(prefix + "/marker_metadata/list.txt"));
             BufferedReader reader5 = new BufferedReader(new FileReader(prefix + "/marker_metadata/marker_cut.txt"));
 
@@ -62,8 +65,7 @@ public class MarkerClassification {
             while ((text3 = reader3.readLine()) != null) {
                 text5 = reader5.readLine();
                 marker_cut = Integer.parseInt(text5);
-                //System.out.println(text3);
-
+                //System.out.println(text3)
 
 
 
@@ -98,7 +100,7 @@ public class MarkerClassification {
                 }
 
                 if(count >= marker_cut){
-                    System.out.print("\"species\":\"" + text3 + "\"}");
+                     System.out.print(text3 + " ");
                 }else{
                     //System.out.println( fileList2 + " is unidentified");
                 }
@@ -106,8 +108,9 @@ public class MarkerClassification {
 
 
             }
+            System.out.print("\"}");
             b_count++;
-            if (b_count < f2.list().length) {
+            if (b_count < f2.list().length-1) {
               System.out.print(",");
             }
         }
