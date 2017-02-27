@@ -45,7 +45,7 @@ class Input extends React.Component {
         this.setState({data_file: e.target.result});
         console.log(e.target.result);
     }
-    
+
     reader.readAsText(e.target.files[0]);
   }
 
@@ -65,7 +65,8 @@ class Input extends React.Component {
         bac_id: this.state.bac_id,
         strain: this.state.strain,
         exp_desc: this.state.exp_desc,
-        peaks: this.state.data_file
+        peaks: this.state.data_file,
+        data_file: this.state.data_file
       }
       console.log('Add Requested:', requestedData);
       this.props.addDataRequest(requestedData);
